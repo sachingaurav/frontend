@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="html">
+<head>
+  <meta charset="UTF-8">
+  <title>Orders</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-bottom: 20px;
+    }
+
+    th, td {
+      border: 1px solid #ddd;
+      padding: 10px;
+      text-align: left;
+    }
+
+    th {
+      background-color: #f2f2f2;
+    }
+    .product-button {
+      padding: 10px 20px;
+      background-color: #5ba0dd;
+      color: #fff;
+      border: none;
+      font-size: 16px;
+      cursor: pointer;
+      border-radius: 4px;
+      transition: background-color 0.3s ease;
+    }
+    .product-button:hover {
+      background-color: #3566af;
+    }
+    
+  </style>
+</head>
+<body>
+  <button class="product-button">Products</button>
+  <h1>Orders</h1>
+    <div id="ordersContainer"></div>
+  <script>
+        fetch('http://ec2-13-49-244-239.eu-north-1.compute.amazonaws.com:3002/orders')
+      .then(response => response.json())
+      .then(ordersData => {
+
+        const ordersContainer = document.getElementById('ordersContainer');
+
+ordersData.forEach(order => {
+  const orderDate = new Date(order.createdAt).toLocaleString();
+  const table = document.createElement('table');
+  const thead = document.createElement('thead');
+  const tbody = document.createElement('tbody');
+  const tfoot = document.createElement('tfoot');
+
+  const headRow = document.createElement('tr');
+  const headCells = ['ID', 'Name', 'Price', 'Description', 'Count'];
+  headCells.forEach(cellText => {
+    const cell = document.createElement('th');
+    cell.textContent = cellText;
+    headRow.appendChild(cell);
+  });
+  thead.appendChild(headRow);
+
+  order.cartItems.forEach(item => {
+    const row = document.createElement('tr');
+
+    const idCell = document.createElement('td');
+    idCell.textContent = item.itemId;
+    row.appendChild(idCell);
+
+    const nameCell = document.createElement('td');
+    nameCell.textContent = item.name;
+    row.appendChild(nameCell);
+
+    const priceCell = document.createElement('td');
+    priceCell.textContent = item.price;
+    row.appendChild(priceCell);
+
+    const descriptionCell = document.createElement('td');
+    descriptionCell.textContent = item.description;
+    row.appendChild(descriptionCell);
+
+    const countCell = document.createElement('td');
+    countCell.textContent = item.count;
+    row.appendChild(countCell);
+
+    tbody.appendChild(row);
+  });
+
+  const totalPrice = order.cartItems.reduce((total, item) => total + (item.price * item.count), 0);
+  const totalRow = document.createElement('tr');
+  const totalCell = document.createElement('td');
+  totalCell.colSpan = 5;
+  totalCell.textContent = 'Total Price: ' + totalPrice;
+  totalRow.appendChild(totalCell);
+  tfoot.appendChild(totalRow);
+
+  table.appendChild(thead);
+  table.appendChild(tbody);
+  table.appendChild(tfoot);
+
+  const orderContainer = document.createElement('div');
+  orderContainer.classList.add('order-container');
+  const orderDateElement = document.createElement('h3');
+  orderDateElement.textContent = 'Order Date: ' + orderDate;
+  orderContainer.appendChild(orderDateElement);
+  orderContainer.appendChild(table);
+
+  ordersContainer.appendChild(orderContainer);
+});
+});
+const productButton = document.querySelector('.product-button');
+productButton.addEventListener('click', () => {
+        window.location.href = '\products.html';
+    });
+  </script>
+</body>
+</html>

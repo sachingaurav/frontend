@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="html">
+<head>
+  <meta charset="UTF-8">
+  <title>Cart Items Table</title>
+  <style>
+        body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-bottom: 20px;
+    }
+
+    th, td {
+      border: 1px solid #ddd;
+      padding: 10px;
+      text-align: left;
+    }
+
+    th {
+      background-color: #f2f2f2;
+    }
+
+    .count-buttons {
+      display: flex;
+      align-items: center;
+    }
+
+    .count-buttons button {
+      padding: 6px 12px;
+      font-size: 14px;
+      background-color: #e0e0e0;
+      color: #333;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .count-buttons button:hover {
+      background-color: #ccc;
+    }
+
+    .cart-button {
+      padding: 10px 20px;
+      background-color: #4CAF50;
+      color: #fff;
+      border: none;
+      font-size: 16px;
+      cursor: pointer;
+      border-radius: 4px;
+      transition: background-color 0.3s ease;
+    }
+
+    .cart-button:hover {
+      background-color: #45a049;
+    }
+    .confirm-button {
+      padding: 10px 20px;
+      background-color: #4CAF50;
+      color: #fff;
+      border: none;
+      font-size: 16px;
+      cursor: pointer;
+      border-radius: 4px;
+      transition: background-color 0.3s ease;
+    }
+    .confirm-button:hover {
+      background-color: #45a049;
+    }
+    .product-button {
+      padding: 10px 20px;
+      background-color: #5ba0dd;
+      color: #fff;
+      border: none;
+      font-size: 16px;
+      cursor: pointer;
+      border-radius: 4px;
+      transition: background-color 0.3s ease;
+    }
+    .product-button:hover {
+      background-color: #3566af;
+    }
+  </style>
+</head>
+<body>
+  <button class="product-button">Products</button>
+  <h1>Cart Items</h1>
+  <table id="cartItemsTable">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Price</th>
+        <th>Description</th>
+        <th>Count</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+    <tfoot>
+      <tr>
+        <td colspan="4" style="text-align: right;">Total Price:</td>
+        <td id="totalPrice"></td>
+      </tr>
+    </tfoot>
+  </table>
+  <button class="confirm-button">Confirm My Order</button>
+  <script>
+
+
+
+    fetch('http://ec2-13-49-244-239.eu-north-1.compute.amazonaws.com:3001/cartItemsWithProducts')
+      .then(response => response.json())
+      .then(cartItems => {
+        const tbody = document.querySelector('#cartItemsTable tbody');
+        let totalPrice = 0;
+        cartItems.forEach(cartItem => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${cartItem.id}</td>
+            <td>${cartItem.name}</td>
+            <td>${cartItem.price}</td>
+            <td>${cartItem.description}</td>
+            <td>${cartItem.count}</td>
+          `;
+          tbody.appendChild(row);
+          totalPrice += cartItem.price * cartItem.count;
+        });
+        document.querySelector('#totalPrice').textContent = totalPrice;
+      })
+      .catch(error => console.error('Error retrieving cart items:', error));
+
+      const productButton = document.querySelector('.product-button');
+productButton.addEventListener('click', () => {
+      window.location.href = '\products.html';
+    });
+
+
+      const confirmButton = document.querySelector('.confirm-button');
+      confirmButton.addEventListener('click', () => {
+        fetch('http://ec2-13-49-244-239.eu-north-1.compute.amazonaws.com:3002/confirm-order')
+        .then(res => {
+            window.location.href = `\order.html`;
+        })
+        console.log("order confirmed");
+    });
+
+
+
+
+
+
+  </script>
+</body>
+</html>

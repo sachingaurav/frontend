@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="html">
+<head>
+  <title>Data Table</title>
+ <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-bottom: 20px;
+    }
+
+    th, td {
+      border: 1px solid #ddd;
+      padding: 10px;
+      text-align: left;
+    }
+
+    th {
+      background-color: #f2f2f2;
+    }
+
+    .count-buttons {
+      display: flex;
+      align-items: center;
+    }
+
+    .count-buttons button {
+      padding: 6px 12px;
+      font-size: 14px;
+      background-color: #e0e0e0;
+      color: #333;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .count-buttons button:hover {
+      background-color: #ccc;
+    }
+
+    .cart-button {
+      padding: 10px 20px;
+      background-color: #4CAF50;
+      color: #fff;
+      border: none;
+      font-size: 16px;
+      cursor: pointer;
+      border-radius: 4px;
+      transition: background-color 0.3s ease;
+    }
+
+    .cart-button:hover {
+      background-color: #45a049;
+    }
+  </style>
+</head>
+<body>
+  <h1>Products</h1>
+
+  <table id="data-table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Price</th>
+        <th>Description</th>
+        <th>Count</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <button class="cart-button">Add to Cart</button>
+
+  <script>
+    // Array to store selected items
+    let cartItems = [];
+
+    // Retrieve data from the RESTful API
+    fetch('http://ec2-13-49-244-239.eu-north-1.compute.amazonaws.com:3000/data')
+      .then(response => response.json())
+      .then(data => {
+        const tableBody = document.querySelector('#data-table tbody');
+
+        data.forEach(record => {
+          const row = document.createElement('tr');
+
+          const idCell = document.createElement('td');
+          idCell.textContent = record.id;
+          row.appendChild(idCell);
+
+          const nameCell = document.createElement('td');
+          nameCell.textContent = record.name;
+          row.appendChild(nameCell);
+
+          const priceCell = document.createElement('td');
+          priceCell.textContent = record.price;
+          row.appendChild(priceCell);
+
+          const descriptionCell = document.createElement('td');
+          descriptionCell.textContent = record.description;
+          row.appendChild(descriptionCell);
+
+          const countCell = document.createElement('td');
+          const countButtonsDiv = document.createElement('div');
+          countButtonsDiv.className = 'count-buttons';
+
+          const minusButton = document.createElement('button');
+          minusButton.textContent = '-';
+          minusButton.addEventListener('click', () => decreaseCount(record.id));
+
+          const plusButton = document.createElement('button');
+          plusButton.textContent = '+';
+          plusButton.addEventListener('click', () => increaseCount(record.id));
+
+          const countSpan = document.createElement('span');
+          countSpan.id = `count-${record.id}`;
+          countSpan.textContent = record.count;
+
+          countButtonsDiv.appendChild(minusButton);
+          countButtonsDiv.appendChild(countSpan);
+          countButtonsDiv.appendChild(plusButton);
+          countCell.appendChild(countButtonsDiv);
+          row.appendChild(countCell);
+
+          tableBody.appendChild(row);
+        });
+      })
+      .catch(error => console.error('Error fetching data:', error));
+
+    function increaseCount(itemId) {
+      const countSpan = document.querySelector(`#count-${itemId}`);
+      const count = parseInt(countSpan.textContent);
+      countSpan.textContent = count + 1;
+    }
+
+    function decreaseCount(itemId) {
+      const countSpan = document.querySelector(`#count-${itemId}`);
+      const count = parseInt(countSpan.textContent);
+      if (count > 0) {
+        countSpan.textContent = count - 1;
+      }
+    }
+    const cartButton = document.querySelector('.cart-button');
+    cartButton.addEventListener('click', () => {
+      cartItems = [];
+      const countSpans = document.querySelectorAll('span[id^="count-"]');
+      countSpans.forEach(countSpan => {
+        const itemId = countSpan.id.split('-')[1];
+        const count = parseInt(countSpan.textContent);
+        if (count >= 0) {
+          cartItems.push({ itemId, count });
+        }
+      });
+      console.log(cartItems);
+      // Add your logic here to send the cartItems to the server or perform any other operations
+      console.log(JSON.stringify(cartItems));
+      if(cartItems.length > 0){
+        const requestOptions = {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(cartItems)
+        };
+
+        fetch('http://ec2-13-49-244-239.eu-north-1.compute.amazonaws.com:3001/api/cart', requestOptions)
+          .then(response => {
+            if (response.ok) {
+              console.log('Items added to cart');
+              window.location.href = `\cart.html`;
+              // Add any additional logic here after successful cart submission
+            } else {
+              console.error('Error adding items to cart:', response.status);
+              // Add error handling logic here
+            }
+          })
+          .catch(error => {
+            console.error('Error adding items to cart:', error);
+            // Add error handling logic here
+          });
+      } else {
+        console.log('No items selected');
+      }
+    });
+  </script>
+</body>
+</html>
